@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap');
+
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer base {
+  :root {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    
+    --popover: 240 10% 5%;
+    --popover-foreground: 0 0% 98%;
+    
+    --primary: 162 76% 76%; /* signature teal: #9ee8cf */
+    --primary-foreground: 240 5.9% 10%;
+    
+    --secondary: 240 4% 12%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --muted: 240 4% 12%;
+    --muted-foreground: 240 5% 65%;
+    
+    --accent: 162 76% 76%;
+    --accent-foreground: 240 5.9% 10%;
+    
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 240 4% 14%;
+    --input: 240 4% 12%;
+    --ring: 162 76% 76%;
+    
+    --radius: 0.75rem;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Manrope', sans-serif;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -25%;
+  pointer-events: none;
+  background: 
+    radial-gradient(circle at 75% 20%, rgba(40, 69, 90, 0.25), transparent 35%),
+    radial-gradient(circle at 15% 65%, rgba(90, 49, 70, 0.15), transparent 30%);
+  z-index: -10;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Custom styles for animations and premium feel */
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-mono-custom {
+  font-family: 'DM Mono', monospace;
+}
+
+.custom-glow {
+  box-shadow: 0 0 40px -10px rgba(158, 232, 207, 0.15);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #fff 30%, #9ee8cf 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.citation-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  background: rgba(158, 232, 207, 0.15);
+  color: #9ee8cf;
+  border: 1px solid rgba(158, 232, 207, 0.3);
+  margin-left: 2px;
+  margin-right: 2px;
+  vertical-align: super;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.citation-badge:hover {
+  background: #9ee8cf;
+  color: #080b10;
+  box-shadow: 0 0 8px rgba(158, 232, 207, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Keyframes for smooth skeleton loader shimmers */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
