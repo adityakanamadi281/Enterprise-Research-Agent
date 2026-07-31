@@ -1,0 +1,26 @@
+services:
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/atlas.db}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      ATLAS_API_KEY: ${ATLAS_API_KEY:-}
+      OPENALEX_API_KEY: ${OPENALEX_API_KEY:-}
+      FIREWORKS_API_KEY: ${FIREWORKS_API_KEY:-}
+      FIREWORKS_MODEL: ${FIREWORKS_MODEL:-}
+      FIREWORKS_EMBEDDING_MODEL: ${FIREWORKS_EMBEDDING_MODEL:-}
+      UPSTASH_REDIS_REST_URL: ${UPSTASH_REDIS_REST_URL:-}
+      UPSTASH_REDIS_REST_TOKEN: ${UPSTASH_REDIS_REST_TOKEN:-}
+      QDRANT_URL: ${QDRANT_URL:-}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+    volumes:
+      - atlas-data:/data
+    ports: ["8000:8000"]
+  web:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports: ["3000:3000"]
+    depends_on: [api]
+volumes:
+  atlas-data:
