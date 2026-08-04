@@ -9,13 +9,19 @@ services:
       FIREWORKS_API_KEY: ${FIREWORKS_API_KEY:-}
       FIREWORKS_MODEL: ${FIREWORKS_MODEL:-}
       FIREWORKS_EMBEDDING_MODEL: ${FIREWORKS_EMBEDDING_MODEL:-}
-      UPSTASH_REDIS_REST_URL: ${UPSTASH_REDIS_REST_URL:-}
-      UPSTASH_REDIS_REST_TOKEN: ${UPSTASH_REDIS_REST_TOKEN:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-llama-3.3-70b-versatile}
+      REDIS_URL: redis://redis:6379/0
       QDRANT_URL: ${QDRANT_URL:-}
       QDRANT_API_KEY: ${QDRANT_API_KEY:-}
     volumes:
       - atlas-data:/data
     ports: ["8000:8000"]
+    depends_on: [redis]
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes: [redis-data:/data]
   web:
     build: ./frontend
     environment:
@@ -24,3 +30,4 @@ services:
     depends_on: [api]
 volumes:
   atlas-data:
+  redis-data:
