@@ -24,7 +24,14 @@ load_dotenv(Path(__file__).parents[2] / ".env")
 
 class Settings(BaseModel):
     database_url: str = os.getenv("DATABASE_URL", "sqlite:///./atlas.db")
-    cors_origins: list[str] = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+    cors_origins: list[str] = [
+        o.strip()
+        for o in os.getenv(
+            "CORS_ORIGINS",
+            "http://localhost:3000,http://localhost:8000,https://enterprise-research-agent.vercel.app"
+        ).split(",")
+        if o.strip()
+    ]
     research_provider: str = os.getenv("RESEARCH_PROVIDER", "openalex")
     openalex_url: str = os.getenv("OPENALEX_URL", "https://api.openalex.org/works")
     openalex_api_key: str | None = os.getenv("OPENALEX_API_KEY")
