@@ -9,40 +9,40 @@ import { RefreshCw, ExternalLink } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://enterprise-research-agent-1.onrender.com";
 
-type Session = { 
-  id: string; 
-  question: string; 
-  status: string; 
-  confidence: number; 
-  conclusion?: string; 
+type Session = {
+  id: string;
+  question: string;
+  status: string;
+  confidence: number;
+  conclusion?: string;
   created_at?: string;
-  sources?: Source[]; 
-  findings?: Finding[]; 
-  events?: Event[] 
+  sources?: Source[];
+  findings?: Finding[];
+  events?: Event[]
 };
 
-type Source = { 
-  id: string; 
-  title: string; 
-  url: string; 
-  publisher?: string; 
-  published_at?: string; 
-  reliability_score: number 
+type Source = {
+  id: string;
+  title: string;
+  url: string;
+  publisher?: string;
+  published_at?: string;
+  reliability_score: number
 };
 
-type Finding = { 
-  id: string; 
-  claim: string; 
-  evidence_span: string; 
-  confidence: number; 
+type Finding = {
+  id: string;
+  claim: string;
+  evidence_span: string;
+  confidence: number;
   classification: string;
   source_id?: string;
 };
 
-type Event = { 
-  step: string; 
-  status: string; 
-  duration_ms: number; 
+type Event = {
+  step: string;
+  status: string;
+  duration_ms: number;
   details: Record<string, any>;
   created_at?: string;
 };
@@ -72,24 +72,24 @@ export default function ResearchWorkspace() {
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
-  
+
   // Navigation & Tabs
   const [activeTab, setActiveTab] = useState<"search" | "library" | "knowledge" | "metrics">("search");
   const [searchFocus, setSearchFocus] = useState<"all" | "academic" | "knowledge">("all");
-  
+
   // Metrics & Stats
   const [metrics, setMetrics] = useState<Metrics | null>(null);
-  
+
   // Knowledge Base Search
   const [kbQuery, setKbQuery] = useState("");
   const [kbResults, setKbResults] = useState<any[]>([]);
-  
+
   // CoPilot mode toggle
   const [proMode, setProMode] = useState(true);
 
   // Focus dropdown toggle
   const [focusDropdownOpen, setFocusDropdownOpen] = useState(false);
-  
+
   // Track selected finding in inspector
   const [selectedFindingIndex, setSelectedFindingIndex] = useState<number>(0);
 
@@ -125,7 +125,7 @@ export default function ResearchWorkspace() {
     fetch(`${API}/v1/metrics/overview`)
       .then((r) => r.json())
       .then(setMetrics)
-      .catch(() => {});
+      .catch(() => { });
   };
 
   useEffect(() => {
@@ -209,7 +209,7 @@ export default function ResearchWorkspace() {
     fetch(`${API}/v1/knowledge/search?q=${encodeURIComponent(val.trim())}`)
       .then((r) => r.json())
       .then(setKbResults)
-      .catch(() => {});
+      .catch(() => { });
   };
 
   // Generate Executive Report
@@ -364,7 +364,7 @@ export default function ResearchWorkspace() {
 
   return (
     <div className="flex h-screen bg-[#191a1a] text-[#eff3fa] overflow-hidden antialiased">
-      
+
       {/* 1. SIDEBAR */}
       <Sidebar
         activeTab={activeTab}
@@ -379,7 +379,7 @@ export default function ResearchWorkspace() {
 
       {/* 2. MAIN CENTER FEED + PERMANENT RIGHT PANEL CONTAINER */}
       <main className="flex-1 bg-[#131415] flex flex-col overflow-hidden relative">
-        
+
         {/* TOP HEADER */}
         <header className="h-12 border-b border-[#2a2c2c]/50 bg-[#131415] px-6 flex items-center justify-between select-none z-10 shrink-0">
           <div className="flex items-center gap-2">
@@ -390,16 +390,16 @@ export default function ResearchWorkspace() {
           </div>
 
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => { refreshHistory(); refreshMetrics(); }} 
+            <button
+              onClick={() => { refreshHistory(); refreshMetrics(); }}
               className="p-1.5 rounded-md hover:bg-[#202222] text-zinc-400 hover:text-white transition-colors"
               title="Refresh"
             >
               <RefreshCw className="h-3.5 w-3.5" />
             </button>
-            <a 
-              href={`${API}/docs`} 
-              target="_blank" 
+            <a
+              href="http://localhost:8000/docs"
+              target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 text-[10px] font-mono-custom text-zinc-400 hover:text-white"
             >
@@ -410,7 +410,7 @@ export default function ResearchWorkspace() {
 
         {/* 3-COLUMN SPLIT PANEL */}
         <div className="flex-1 flex overflow-hidden">
-          
+
           {/* Main Feed panel */}
           <MainFeed
             activeTab={activeTab}
