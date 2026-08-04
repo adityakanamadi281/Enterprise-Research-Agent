@@ -1,213 +1,110 @@
-# Atlas Research Intelligence
+# Enterprise Research Agent (Atlas)
 
-Atlas is an autonomous, evidence-first **Enterprise AI Research Agent**. Built for deep research and synthesis, Atlas transforms a user question into a persistent, verifiable research session with structured evidence spans, entity relationships, citation tracking, and executive reports.
+## Overview
 
----
+Enterprise Research Agent (Atlas) is an evidence-first, autonomous research orchestration system designed to retrieve, analyze, index, synthesize, and verify enterprise and scientific intelligence. Powered by a 7-stage LangGraph execution pipeline, multi-provider LLM synthesis, hybrid vector search with Qdrant, Redis semantic caching, and full evidence-claim tracking with contradiction detection.
 
-## 📌 Overview
+The system is designed to be:
+- **Evidence-First & Audit-Ready**
+- **Multi-Source Retrieval** (OpenAlex scholarly database, Tavily live web search, local PDF/TXT documents)
+- **Multi-Provider LLM Integration** (Fireworks AI, Groq, and deterministic fallbacks)
+- **Durable Vector Indexing & Semantic Caching** (Qdrant & Redis)
+- **Fast & Resilient with Graceful Degradation**
 
-Unlike standard conversational chatbots that generate stateless responses, Atlas executes a transparent, multi-stage agentic research pipeline. Every phase of research—from initial plan generation to external source retrieval, evidence extraction, synthesis, and contradiction verification—is logged as an auditable, API-visible run event.
 
-### Why Atlas?
+## Key Features
 
-- 🧠 **Agentic Workflow:** Follows a structured research cycle: `Question -> Research Plan -> Web/Public Source Retrieval -> Evidence Extraction -> Finding Synthesis -> Contradiction Verification -> Persistent Knowledge Base -> Cited Executive Brief`.
-- 🛡️ **Evidence Grounded:** Zero-source or unverified claims are blocked. Every finding is linked directly to exact source text spans, URLs, and confidence scores.
-- 💾 **Local-First Persistence:** Defaults to SQLite for zero-setup local deployment, with optional PostgreSQL support for enterprise scale.
-- 🔍 **Multi-Source Retrieval:** Leverages OpenAlex for academic/public literature research and Tavily API for real-time web search.
-- 🚀 **Extensible Integrations:** Seamlessly connects with Fireworks AI (LLM synthesis & embeddings), Upstash Redis (semantic caching), and Qdrant (vector database).
+- **7-Stage LangGraph Research Workflow** (`plan` → `retrieve` → `store` → `extract` → `entities` → `compare` → `synthesize`)
+- **Scholarly & Live Web Search Integration** via OpenAlex API and Tavily Search
+- **Durable Document Ingestion** supporting local `.pdf` and `.txt` evidence upload
+- **Vector Indexing & Hybrid Search** using Qdrant vector database
+- **Semantic Caching & Deduplication** powered by Redis
+- **Multi-LLM Orchestration** supporting Fireworks AI (`DeepSeek-v3/r1`) and Groq (`Llama-3.3-70b`)
+- **Entity Extraction & Stance Analysis** for cross-verifying findings and identifying contradictions
+- **Executive Report Generation** with downloadable executive briefs and audit trace logs
+- **Real-time Pipeline Telemetry & Metrics** tracking session performance, cache hits, and latency
+- **Modern Interactive Dashboard** built with Next.js 16, Tailwind CSS, and Lucide icons
 
----
 
-## 🏗️ Architecture
+## Technology Stack
 
-```mermaid
-flowchart LR
-  U[Research Workspace UI] --> A[FastAPI Backend API]
-  A --> O[Research Orchestrator]
-  O --> X[OpenAlex Academic API]
-  O --> T[Tavily Web Search]
-  O --> M[Fireworks AI / Ollama LLM]
-  O --> D[(SQLite / PostgreSQL)]
-  O --> Q[(Qdrant Vector DB)]
-  O --> R[(Upstash Redis Cache)]
-  D --> K[Evidence, Findings, Entities, Sessions]
-  A --> E[Trace Timeline + Citation API]
+- **Python 3.12**
+- **FastAPI & Uvicorn**
+- **LangGraph** (StateGraph pipeline orchestration)
+- **SQLAlchemy & SQLite / PostgreSQL**
+- **Redis** (Semantic caching)
+- **Qdrant** (Vector similarity engine)
+- **Fireworks AI & Groq** (LLM providers)
+- **httpx & PyPDF**
+- **Next.js 16** (App Router & Turbopack)
+- **TypeScript & React**
+- **Tailwind CSS & Lucide React**
+- **Ruff & Pytest**
+
+
+## Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/adityakanamadi281/Enterprise-Research-Agent.git
+
+# Navigate to the project directory
+cd Enterprise-Research-Agent
 ```
-
----
-
-## ✨ Features
-
-### 🔍 Autonomous Multi-Stage Research Pipeline
-- **Planning:** Generates structured research queries from broad questions.
-- **Multi-Source Ingestion:** Fetches academic papers (OpenAlex) and live web results (Tavily).
-- **Document Processing:** Upload and extract evidence from local PDF and TXT files.
-- **Evidence Extraction:** Extracts verbatim evidence text spans with relevance scoring and confidence evaluation.
-- **Contradiction Checking:** Identifies conflicting evidence across sources and surfaces uncertainty rather than hallucinating consistency.
-
-### 📚 Knowledge Base & Vector Search
-- **Persistent Storage:** All research sessions, findings, evidence spans, and entities survive system restarts.
-- **Vector Indexing:** Integrates with Qdrant for semantic search over historical evidence across multiple research runs.
-- **Semantic Caching:** Integrates with Upstash Redis to cache retrieval results and eliminate redundant API calls.
-
-### 📄 Executive Briefing & Report Generation
-- **Cited Reports:** Generates executive briefs backed by interactive, clickable citations.
-- **Export & Share:** Export research summaries and structured reports.
-- **Entity & Graph Analysis:** Maps relationships between extracted entities and research sources.
-
-### 📊 Observability, Security & Metrics
-- **Auditable Run Events:** Step-by-step execution metrics (duration, status, parameters) exposed per session.
-- **API Key Security:** Built-in middleware supporting API key authentication (`X-API-Key`).
-- **Platform Health Dashboard:** System health and quality metrics available at `/v1/metrics/overview`.
-- **Audit Logging:** Structured audit trails for organization, project, and session actions.
-
----
-
-## 🛠️ Tech Stack
-
-### Backend
-- **Framework:** [FastAPI](https://fastapi.tiangolo.com/) (Python 3.12+)
-- **Server:** Uvicorn
-- **ORM & DB:** [SQLAlchemy 2.0](https://www.sqlalchemy.org/) (SQLite / PostgreSQL)
-- **Package Manager:** [`uv`](https://github.com/astral-sh/uv)
-- **Document Ingestion:** `pypdf`, `python-multipart`
-- **Validation:** Pydantic v2
-- **Testing & Linting:** `pytest`, `ruff`
-
-### Frontend
-- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
-- **UI & Styling:** [React 19](https://react.dev/), [Tailwind CSS v4](https://tailwindcss.com/)
-- **Icons:** [Lucide React](https://lucide.dev/)
-- **Language:** TypeScript
-
-### DevOps & Infrastructure
-- **Containerization:** Docker & Docker Compose
-
-### Integrations & Services
-- **LLM / Synthesis:** Fireworks AI (`accounts/fireworks/models/deepseek-r1` or custom), optional local Ollama adapter
-- **Web Search & Literature:** Tavily Search API, OpenAlex API
-- **Vector Database:** Qdrant
-- **Caching:** Upstash Redis
-
----
-
-## 📁 Project Structure
-
-```
-Enterprise-Research-Agent/
-├── backend/
-│   ├── app/
-│   │   ├── api/          # FastAPI routes, Pydantic request/response schemas, & auth security
-│   │   │   ├── routes.py # Core endpoint definitions (/v1/research, /v1/documents, etc.)
-│   │   │   └── security.py # API key validation middleware
-│   │   ├── domain/       # Database entities & ORM models
-│   │   │   └── models.py # SQLAlchemy schema (ResearchSession, Finding, Source, etc.)
-│   │   ├── services/     # Core domain services & business logic
-│   │   │   ├── research.py  # Research pipeline orchestrator
-│   │   │   ├── providers.py # External integrations (Fireworks, Tavily, Upstash, Qdrant)
-│   │   │   ├── documents.py # PDF/TXT parsing and evidence extraction
-│   │   │   └── audit.py     # System audit logging service
-│   │   ├── config.py     # Environment configurations & settings validation
-│   │   └── main.py       # FastAPI app initialization and middleware registration
-│   ├── scripts/          # Evaluation tools and automation scripts
-│   ├── tests/            # Test suite (pytest)
-│   ├── uploads/          # Local directory for uploaded research documents
-│   ├── Dockerfile        # Container build definition for backend
-│   └── pyproject.toml    # Python project metadata & uv dependency configuration
-├── frontend/
-│   ├── app/              # Next.js App Router layout and pages
-│   ├── components/       # Reusable React components
-│   │   ├── MainFeed.tsx        # Central research workspace & query input
-│   │   ├── Sidebar.tsx         # Research sessions & navigation drawer
-│   │   ├── CitationsPanel.tsx  # Dynamic evidence & citation inspector
-│   │   └── ReportModal.tsx     # Executive brief viewer & generator
-│   ├── Dockerfile        # Container build definition for frontend
-│   └── package.json      # Frontend npm dependencies and scripts
-├── docs/                 # Architectural documentation, runbooks, and demo guides
-│   ├── architecture.md
-│   ├── backend-runbook.md
-│   └── demo-script.md
-├── docker-compose.yml    # Multi-container orchestration (Backend + Frontend)
-├── .env.example          # Environment variables setup guide
-└── README.md             # Project documentation
-```
-
----
-
-## 🚀 Setup & Installation
-
-### Prerequisites
-- **Docker & Docker Compose** (Recommended)
-- *OR for manual local setup:*
-  - **Python 3.12+** & **`uv`** package manager
-  - **Node.js 18+** & **npm**
-
----
 
 ### Option A: Docker Compose (Quickstart)
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/adityakanamadi281/Enterprise-Research-Agent.git
-   cd Enterprise-Research-Agent
-   ```
+```bash
+# Setup environment variables
+cp .env.example .env
 
-2. **Set up environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
-   *(Optional: Edit `.env` to provide API keys for Tavily, Fireworks, Qdrant, etc.)*
+# Build and launch all services (Backend, Frontend, Redis)
+docker compose up --build
+```
 
-3. **Build and launch containers:**
-   ```bash
-   docker compose up --build
-   ```
-
-4. **Access the applications:**
-   - **Frontend UI:** `http://localhost:3000`
-   - **Backend API Docs (Swagger):** `http://localhost:8000/docs`
-
----
-
-### Option B: Manual Local Development Setup
+### Option B: Manual Local Setup
 
 #### 1. Backend Setup
 
 ```bash
 cd backend
 
-# Create local environment file
+# Create environment configuration file
 cp .env.example .env
 
-# Install Python dependencies using uv
+# Install dependencies using uv
 uv sync --all-groups
 
 # Start the FastAPI server in reload mode
 uv run uvicorn app.main:app --reload --port 8000
 ```
-The backend API will be available at `http://localhost:8000`.
 
 #### 2. Frontend Setup
 
 ```bash
 cd frontend
 
-# Create environment configuration file
+# Create local environment configuration file
 cp .env.local.example .env.local
 
-# Install Node modules
+# Install Node.js dependencies
 npm install
 
 # Start the Next.js development server
 npm run dev
 ```
-The frontend workspace will be available at `http://localhost:3000`.
 
----
 
-## ⚙️ Environment Configuration
+## Run
 
-Copy `.env.example` to `.env` in the project root (or `backend/.env.example` to `backend/.env`).
+Access the running applications:
+
+- **Frontend Dashboard:** `http://localhost:3000`
+- **Backend API Docs (Swagger):** `http://localhost:8000/docs`
+- **Health Check Endpoint:** `http://localhost:8000/v1/health`
+
+
+## Environment Variables
 
 | Variable | Default | Description |
 |---|---|---|
@@ -215,36 +112,141 @@ Copy `.env.example` to `.env` in the project root (or `backend/.env.example` to 
 | `CORS_ORIGINS` | `http://localhost:3000` | Allowed origin domains for CORS |
 | `ATLAS_API_KEY` | *(unset)* | API key required in header `X-API-Key` if specified |
 | `FIREWORKS_API_KEY` | *(unset)* | Fireworks AI key for LLM research planning & synthesis |
-| `FIREWORKS_MODEL` | *(unset)* | Target model (e.g. `accounts/fireworks/models/deepseek-r1`) |
-| `FIREWORKS_EMBEDDING_MODEL` | *(unset)* | Target embedding model for vector indexing |
+| `FIREWORKS_MODEL` | `accounts/fireworks/models/deepseek-v3p1` | Target Fireworks model |
+| `FIREWORKS_EMBEDDING_MODEL` | `fireworks/qwen3-embedding-8b` | Target embedding model |
+| `GROQ_API_KEY` | *(unset)* | Groq API key for alternative LLM provider |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Target Groq model |
+| `REDIS_URL` | `redis://localhost:6379/0` | Redis connection URL for semantic caching |
 | `TAVILY_API_KEY` | *(unset)* | Tavily Search API key for real-time web research |
-| `UPSTASH_REDIS_REST_URL` | *(unset)* | Upstash Redis REST URL for semantic caching |
-| `UPSTASH_REDIS_REST_TOKEN` | *(unset)* | Upstash Redis REST token |
 | `QDRANT_URL` | *(unset)* | Qdrant Vector database instance URL |
 | `QDRANT_API_KEY` | *(unset)* | Qdrant API authorization key |
-| `ENVIRONMENT` | `development` | System deployment environment (`development`, `production`) |
+| `QDRANT_COLLECTION` | `atlas_evidence` | Qdrant collection name for vector indexing |
 
----
 
-## 🧪 Verification & Testing
+## Project Structure
 
-Run the test suite and static code analysis in the `backend` directory:
+```text
+Enterprise-Research-Agent/
+├── .env.example                 # Global environment configuration guide
+├── Dockerfile                   # Workspace Docker container build definition
+├── docker-compose.yml           # Multi-container orchestration (Backend, Frontend, Redis)
+├── README.md                    # Project documentation
+├── backend/
+│   ├── app/
+│   │   ├── api/                 # REST API endpoints & authorization middleware
+│   │   │   ├── routes.py
+│   │   │   └── security.py
+│   │   ├── domain/              # SQLAlchemy database models & Pydantic schemas
+│   │   │   └── models.py
+│   │   ├── services/            # Core business logic & provider integrations
+│   │   │   ├── audit.py         # Metrics & operational telemetry aggregation
+│   │   │   ├── documents.py     # PDF & TXT document parsing & text extraction
+│   │   │   ├── providers.py     # External LLM, search, & vector store clients
+│   │   │   └── research.py      # LangGraph state machine & orchestration
+│   │   ├── config.py            # Environment settings & configuration validation
+│   │   └── main.py              # FastAPI application initialization
+│   ├── scripts/
+│   │   └── evaluate.py          # Benchmark evaluation script
+│   ├── tests/                   # Pytest test suite
+│   │   ├── test_api.py
+│   │   ├── test_knowledge.py
+│   │   └── test_research.py
+│   ├── Dockerfile               # Backend container definition
+│   └── pyproject.toml           # Python metadata & uv package dependencies
+└── frontend/
+    ├── app/                     # Next.js App Router layout and pages
+    │   ├── layout.tsx
+    │   ├── page.tsx
+    │   └── styles.css
+    ├── components/              # Reusable React components
+    │   ├── CitationsPanel.tsx   # Dynamic evidence & citation inspector
+    │   ├── MainFeed.tsx         # Central workspace feed & search timeline
+    │   ├── ReportModal.tsx      # Executive report generator & viewer
+    │   └── Sidebar.tsx          # Session history & drawer navigation
+    ├── Dockerfile               # Frontend container definition
+    ├── package.json             # Frontend npm dependencies and scripts
+    ├── tailwind.config.js       # Tailwind CSS configuration
+    └── tsconfig.json            # TypeScript compiler configuration
+```
+
+
+## Research Pipeline & Scoring
+
+```text
+    [ START ]
+        │
+        ▼
+   ┌─────────┐     Generates strategic search queries
+   │  Plan   │ ──► based on user research prompt
+   └────┬────┘
+        │
+        ▼
+   ┌─────────┐     Queries OpenAlex, Tavily Web,
+   │Retrieve │ ──► and uploaded local documents
+   └────┬────┘
+        │
+        ▼
+   ┌─────────┐     Persists evidence sources and
+   │  Store  │ ──► indexes vectors in Qdrant & Redis
+   └────┬────┘
+        │
+        ▼
+   ┌─────────┐     Extracts granular claim statements
+   │ Extract │ ──► and calculates initial confidence
+   └────┬────┘
+        │
+        ▼
+   ┌─────────┐     Identifies key entities, organizations,
+   │Entities │ ──► and domain topics across evidence
+   └────┬────┘
+        │
+        ▼
+   ┌─────────┐     Cross-checks claims for contradictions
+   │ Compare │ ──► and penalizes confidence if conflict exists
+   └────┬────┘
+        │
+        ▼
+   ┌─────────┐     Synthesizes executive briefing using
+   │Synthesize──► Fireworks AI / Groq LLMs
+   └────┬────┘
+        │
+        ▼
+    [  END  ]
+```
+
+### Confidence Scoring Calculation
+
+The overall research confidence score is calculated based on mean findings confidence penalised by detected evidence contradictions:
+
+$$\text{Confidence} = \max\left(0,\, \frac{1}{N}\sum_{i=1}^N \text{ClaimConfidence}_i - (\text{Contradictions} \times 0.04)\right)$$
+
+
+## Tests
+
+Execute the static analysis tools and unit tests in the `backend` directory:
 
 ```bash
 cd backend
 
-# Run linting with Ruff
+# Run code style and lint checks with Ruff
 uv run ruff check app tests scripts
 
 # Execute unit and integration tests
 uv run pytest
 
-# Run the golden-set evaluation benchmark
+# Run golden-set evaluation benchmark
 uv run python scripts/evaluate.py
 ```
 
----
 
-## 📄 License
+## Docker
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Launch all application services using Docker Compose:
+
+```bash
+docker build -t enterprise-research-backend ./backend
+docker build -t enterprise-research-frontend ./frontend
+
+# Or launch all services together
+docker compose up --build
+```
