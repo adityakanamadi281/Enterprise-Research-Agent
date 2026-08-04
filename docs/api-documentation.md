@@ -4,6 +4,7 @@
 
 The Enterprise Research Agent (Atlas) REST API provides endpoints for executing research sessions, retrieving live Server-Sent Events (SSE), uploading documents, generating executive briefs, searching knowledge bases, and inspecting operational telemetry.
 
+**API Swagger Interactive Docs**: [https://enterprise-research-agent-1.onrender.com/docs](https://enterprise-research-agent-1.onrender.com/docs)
 > **Base URL**: `http://localhost:8000/v1`  
 > **Interactive Swagger Documentation**: `http://localhost:8000/docs`  
 > **ReDoc Specifications**: `http://localhost:8000/redoc`
