@@ -47,3 +47,17 @@ def test_text_document_upload_creates_durable_evidence() -> None:
     document = response.json()["documents"][0]
     assert document["filename"] == "strategy.txt"
     assert document["characters"] > 0
+
+
+def test_executive_report_generation() -> None:
+    with TestClient(app) as client:
+        session_res = client.post("/v1/research", json={"question": "What is enterprise agentic AI strategy?"})
+        assert session_res.status_code == 201
+        session_id = session_res.json()["id"]
+
+        report_res = client.post(f"/v1/research/{session_id}/report", json={"title": "Test Executive Strategy Report"})
+        assert report_res.status_code == 200
+        data = report_res.json()
+        assert data["title"] == "Test Executive Strategy Report"
+        assert "generated_at" in data
+
