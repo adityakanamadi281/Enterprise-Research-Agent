@@ -17,7 +17,9 @@ def load_dotenv(path: Path) -> None:
         os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
+load_dotenv(Path(__file__).parents[1] / ".env")
 load_dotenv(Path(__file__).parents[2] / ".env")
+
 
 
 class Settings(BaseModel):
@@ -30,16 +32,27 @@ class Settings(BaseModel):
     fireworks_base_url: str = os.getenv(
         "FIREWORKS_BASE_URL", "https://api.fireworks.ai/inference/v1"
     )
-    fireworks_model: str | None = os.getenv("FIREWORKS_MODEL")
-    fireworks_embedding_model: str | None = os.getenv("FIREWORKS_EMBEDDING_MODEL")
-    upstash_redis_rest_url: str | None = os.getenv("UPSTASH_REDIS_REST_URL")
-    upstash_redis_rest_token: str | None = os.getenv("UPSTASH_REDIS_REST_TOKEN")
+    # A capable default for structured research tasks; users may override it in .env.
+    fireworks_model: str | None = os.getenv(
+        "FIREWORKS_MODEL", "accounts/fireworks/models/deepseek-v3p1"
+    )
+    # Fireworks' current high-quality serverless embedding family.
+    fireworks_embedding_model: str | None = os.getenv(
+        "FIREWORKS_EMBEDDING_MODEL", "fireworks/qwen3-embedding-8b"
+    )
+    groq_api_key: str | None = os.getenv("GROQ_API_KEY")
+    groq_base_url: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+    groq_model: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    redis_url: str | None = os.getenv("REDIS_URL")
     research_cache_ttl_seconds: int = int(os.getenv("RESEARCH_CACHE_TTL_SECONDS", "3600"))
     qdrant_url: str | None = os.getenv("QDRANT_URL")
     qdrant_api_key: str | None = os.getenv("QDRANT_API_KEY")
     qdrant_collection: str = os.getenv("QDRANT_COLLECTION", "atlas_evidence")
     tavily_api_key: str | None = os.getenv("TAVILY_API_KEY")
     tavily_url: str = os.getenv("TAVILY_URL", "https://api.tavily.com/search")
+    atlas_reuse_threshold: float = float(os.getenv("ATLAS_REUSE_THRESHOLD", "0.78"))
+    atlas_min_reuse_chunks: int = int(os.getenv("ATLAS_MIN_REUSE_CHUNKS", "3"))
+    atlas_offline_demo_mode: bool = os.getenv("ATLAS_OFFLINE_DEMO_MODE", "false").lower() == "true"
     upload_dir: str = os.getenv("UPLOAD_DIR", "./uploads")
     max_upload_bytes: int = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))
     api_key: str | None = os.getenv("ATLAS_API_KEY")
