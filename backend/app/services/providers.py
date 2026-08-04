@@ -74,7 +74,7 @@ def _chat_request(
             "temperature": 0.1,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
         },
-        timeout=35,
+        timeout=12,
     )
     response.raise_for_status()
     body = response.json()
@@ -118,25 +118,29 @@ def _log_call(
     from app.domain.models import LlmCall
 
     usage = usage or {}
-    context.db.add(
-        LlmCall(
-            research_session_id=context.research_session_id,
-            request_id=context.request_id or str(uuid4()),
-            node=context.node,
-            provider=provider,
-            model_name=model,
-            call_type=call_type,
-            prompt_tokens=usage.get("prompt_tokens"),
-            completion_tokens=usage.get("completion_tokens"),
-            total_tokens=usage.get("total_tokens"),
-            latency_ms=round((time.perf_counter() - began) * 1000, 1),
-            status=status,
-            error_message=error,
-            attempt_number=attempt,
-            estimated_cost_usd=None,
+    try:
+        context.db.add(
+            LlmCall(
+                id=str(uuid4()),
+                research_session_id=context.research_session_id,
+                request_id=context.request_id or str(uuid4()),
+                node=context.node,
+                provider=provider,
+                model_name=model,
+                call_type=call_type,
+                prompt_tokens=usage.get("prompt_tokens"),
+                completion_tokens=usage.get("completion_tokens"),
+                total_tokens=usage.get("total_tokens"),
+                latency_ms=round((time.perf_counter() - began) * 1000, 1),
+                status=status,
+                error_message=error,
+                attempt_number=attempt,
+                estimated_cost_usd=None,
+            )
         )
-    )
-    context.db.commit()
+        context.db.commit()
+    except Exception:
+        context.db.rollback()
 
 
 def _run_llm(
@@ -333,7 +337,7 @@ def duckduckgo_search(query: str, max_results: int = 4) -> list[dict[str, Any]]:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
-        resp = httpx.post(url, data={"q": query}, headers=headers, timeout=12, follow_redirects=True)
+        resp = httpx.post(url, data={"q": query}, headers=headers, timeout=4, follow_redirects=True)
         if resp.status_code != 200:
             return []
 
@@ -383,7 +387,7 @@ def tavily_search(query: str, max_results: int = 5) -> list[dict[str, Any]]:
                     "max_results": max_results,
                     "include_raw_content": "text",
                 },
-                timeout=25,
+                timeout=6,
             )
             if response.status_code == 200:
                 results = [

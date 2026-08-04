@@ -7,6 +7,8 @@ from datetime import UTC, datetime
 from itertools import combinations
 from typing import Any, TypedDict
 
+from uuid import uuid4
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -57,16 +59,20 @@ class ResearchState(TypedDict, total=False):
 def event(
     db: Session, session_id: str, step: str, status: str, began: float, **details: Any
 ) -> None:
-    db.add(
-        RunEvent(
-            research_session_id=session_id,
-            step=step,
-            status=status,
-            duration_ms=round((time.perf_counter() - began) * 1000, 1),
-            details=details,
+    try:
+        db.add(
+            RunEvent(
+                id=str(uuid4()),
+                research_session_id=session_id,
+                step=step,
+                status=status,
+                duration_ms=round((time.perf_counter() - began) * 1000, 1),
+                details=details,
+            )
         )
-    )
-    db.commit()
+        db.commit()
+    except Exception:
+        db.rollback()
 
 
 def context(db: Session, state: ResearchState, node: str) -> LlmContext:
@@ -145,56 +151,71 @@ def _reuse_sources(db: Session, state: ResearchState, subquestion: str) -> list[
     return valid
 
 
+def _fetch_subquestion_web_and_academic(subquestion: str) -> tuple[str, list[dict[str, Any]], int]:
+    candidates, fetched = [], 0
+    web_results = tavily_search(subquestion, 3)
+    for item in web_results:
+        if item.get("url") and item.get("content"):
+            item.update(query=subquestion, origin=item.get("origin", "web_search"))
+            candidates.append(item)
+            fetched += 1
+
+    try:
+        clean_query = re.sub(r'[^\w\s]', ' ', subquestion).strip()
+        response = httpx.get(
+            settings().openalex_url, params={"search": clean_query, "per-page": 2}, timeout=3
+        )
+        if response.status_code == 200:
+            for work in response.json().get("results", []):
+                text = abstract(work.get("abstract_inverted_index"))
+                if text and text != "No abstract":
+                    candidates.append(
+                        {
+                            "title": work.get("title", "Academic source"),
+                            "url": work.get("doi") or work.get("id", ""),
+                            "content": text,
+                            "score": 0.8,
+                            "published_date": work.get("publication_date"),
+                            "query": subquestion,
+                            "origin": "openalex",
+                        }
+                    )
+                    fetched += 1
+    except Exception:
+        pass
+    return subquestion, candidates, fetched
+
+
 def retrieve_node(db: Session, state: ResearchState) -> ResearchState:
     began, candidates, reused = time.perf_counter(), [], []
-    for subquestion in state["subquestions"]:
-        known = _reuse_sources(db, state, subquestion)
-        reused.extend(known)
-        fetched = 0
-        if len(known) < settings().atlas_min_reuse_chunks:
-            # 1. Search live Web for every subquestion query
-            web_results = tavily_search(subquestion, 4)
-            for item in web_results:
-                if item.get("url") and item.get("content"):
-                    item.update(query=subquestion, origin=item.get("origin", "web_search"))
-                    candidates.append(item)
-                    fetched += 1
+    subquestions = state.get("subquestions", [])[:3]
 
-            # 2. Search OpenAlex academic literature for every subquestion query
+    for sq in subquestions:
+        known = _reuse_sources(db, state, sq)
+        reused.extend(known)
+
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {
+            executor.submit(_fetch_subquestion_web_and_academic, sq): sq for sq in subquestions
+        }
+        for future in as_completed(futures):
             try:
-                clean_query = re.sub(r'[^\w\s]', ' ', subquestion).strip()
-                response = httpx.get(
-                    settings().openalex_url, params={"search": clean_query, "per-page": 2}, timeout=10
+                sq, sq_candidates, fetched = future.result()
+                candidates.extend(sq_candidates)
+                event(
+                    db,
+                    state["session_id"],
+                    "reuse_and_retrieve",
+                    "completed",
+                    began,
+                    query=sq,
+                    reused_chunks=0,
+                    reused_sources=0,
+                    fetched_sources=fetched,
                 )
-                if response.status_code == 200:
-                    for work in response.json().get("results", []):
-                        text = abstract(work.get("abstract_inverted_index"))
-                        if text and text != "No abstract":
-                            candidates.append(
-                                {
-                                    "title": work.get("title", "Academic source"),
-                                    "url": work.get("doi") or work.get("id", ""),
-                                    "content": text,
-                                    "score": 0.8,
-                                    "published_date": work.get("publication_date"),
-                                    "query": subquestion,
-                                    "origin": "openalex",
-                                }
-                            )
-                            fetched += 1
             except Exception:
                 pass
-        event(
-            db,
-            state["session_id"],
-            "reuse_and_retrieve",
-            "completed",
-            began,
-            query=subquestion,
-            reused_chunks=len(known),
-            reused_sources=len(known),
-            fetched_sources=fetched,
-        )
+
     unique = {
         hashlib.sha256((item["url"] + item["content"][:1000]).encode()).hexdigest(): item
         for item in candidates
