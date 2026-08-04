@@ -398,7 +398,7 @@ export default function ResearchWorkspace() {
               <RefreshCw className="h-3.5 w-3.5" />
             </button>
             <a
-              href="http://localhost:8000/docs"
+              href="https://enterprise-research-agent-1.onrender.com/docs"
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 text-[10px] font-mono-custom text-zinc-400 hover:text-white"
