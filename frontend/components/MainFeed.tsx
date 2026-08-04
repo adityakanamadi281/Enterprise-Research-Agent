@@ -1,47 +1,47 @@
 "use client";
 
-import { 
-  Globe, BookOpen, Database, Paperclip, ArrowRight, AlertCircle, 
-  Sparkles, Download, HelpCircle, History, Search, Cpu, CheckCircle2, 
-  Clock, Info 
+import {
+  Globe, BookOpen, Database, Paperclip, ArrowRight, AlertCircle,
+  Sparkles, Download, HelpCircle, History, Search, Cpu, CheckCircle2,
+  Clock, Info
 } from "lucide-react";
 
-type Source = { 
-  id: string; 
-  title: string; 
-  url: string; 
-  publisher?: string; 
-  published_at?: string; 
-  reliability_score: number 
+type Source = {
+  id: string;
+  title: string;
+  url: string;
+  publisher?: string;
+  published_at?: string;
+  reliability_score: number
 };
 
-type Finding = { 
-  id: string; 
-  claim: string; 
-  evidence_span: string; 
-  confidence: number; 
+type Finding = {
+  id: string;
+  claim: string;
+  evidence_span: string;
+  confidence: number;
   classification: string;
   source_id?: string;
 };
 
-type Event = { 
-  step: string; 
-  status: string; 
-  duration_ms: number; 
+type Event = {
+  step: string;
+  status: string;
+  duration_ms: number;
   details: Record<string, any>;
   created_at?: string;
 };
 
-type Session = { 
-  id: string; 
-  question: string; 
-  status: string; 
-  confidence: number; 
-  conclusion?: string; 
+type Session = {
+  id: string;
+  question: string;
+  status: string;
+  confidence: number;
+  conclusion?: string;
   created_at?: string;
-  sources?: Source[]; 
-  findings?: Finding[]; 
-  events?: Event[] 
+  sources?: Source[];
+  findings?: Finding[];
+  events?: Event[]
 };
 
 type Metrics = {
@@ -123,7 +123,7 @@ export default function MainFeed({
   kbResults,
   metrics,
 }: MainFeedProps) {
-  
+
   const focusLabels = {
     all: "All Sources",
     academic: "Academic (OpenAlex)",
@@ -133,15 +133,15 @@ export default function MainFeed({
   return (
     <div className="flex-1 overflow-y-auto px-6 py-10 md:py-16">
       <div className="max-w-2xl mx-auto space-y-12">
-        
+
         {/* VIEW A: SEARCH / HOME TAB */}
         {activeTab === "search" && (
           <>
-            
+
             {/* HOMEPAGE VIEW */}
             {!current && !loading && (
               <div className="py-8 space-y-10">
-                
+
                 {/* Welcoming Text */}
                 <div className="text-center space-y-3 pt-6">
                   <h2 className="text-3xl md:text-4xl font-normal text-white tracking-tight">
@@ -151,7 +151,7 @@ export default function MainFeed({
 
                 {/* Perplexity Search Box Container */}
                 <div className="bg-[#202222] border border-[#2a2c2c] rounded-2xl p-2 shadow-xl focus-within:border-zinc-700 transition-colors relative">
-                  
+
                   <div className="px-3 pt-2">
                     <textarea
                       ref={textareaRef}
@@ -172,12 +172,12 @@ export default function MainFeed({
 
                   {/* Tool Actions Row */}
                   <div className="flex items-center justify-between px-2 pb-1 pt-2 border-t border-[#2a2c2c]/40 mt-1 select-none">
-                    
+
                     <div className="flex items-center gap-2">
-                      
+
                       {/* Focus Button */}
                       <div className="relative">
-                        <button 
+                        <button
                           onClick={() => setFocusDropdownOpen(!focusDropdownOpen)}
                           className="flex items-center gap-1.5 py-1 px-3.5 rounded-full border border-[#2a2c2c] bg-[#191a1a] hover:bg-[#202222] text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
                         >
@@ -188,19 +188,19 @@ export default function MainFeed({
                         {/* Dropdown list */}
                         {focusDropdownOpen && (
                           <div className="absolute left-0 bottom-9 w-52 bg-[#191a1a] border border-[#2a2c2c] rounded-xl shadow-2xl p-1 z-40">
-                            <button 
+                            <button
                               onClick={() => { setSearchFocus("all"); setFocusDropdownOpen(false); }}
                               className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-[#202222] flex items-center gap-2"
                             >
                               <Globe className="h-3.5 w-3.5 text-zinc-500" /> All Sources
                             </button>
-                            <button 
+                            <button
                               onClick={() => { setSearchFocus("academic"); setFocusDropdownOpen(false); }}
                               className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-[#202222] flex items-center gap-2"
                             >
                               <BookOpen className="h-3.5 w-3.5 text-zinc-500" /> Academic (OpenAlex)
                             </button>
-                            <button 
+                            <button
                               onClick={() => { setSearchFocus("knowledge"); setFocusDropdownOpen(false); }}
                               className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-[#202222] flex items-center gap-2"
                             >
@@ -220,17 +220,17 @@ export default function MainFeed({
                     <div className="flex items-center gap-3">
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <span className="text-[11px] font-mono-custom text-zinc-500">CoPilot</span>
-                        <input 
-                          type="checkbox" 
-                          checked={proMode} 
+                        <input
+                          type="checkbox"
+                          checked={proMode}
                           onChange={() => setProMode(!proMode)}
                           className="sr-only peer"
                         />
                         <div className="w-8 h-4 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#191a1a] after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#10B981] relative"></div>
                       </label>
 
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => handleSearch()}
                         disabled={question.trim().length < 12}
                         className="h-8 w-8 rounded-full bg-[#10B981] disabled:bg-zinc-800 text-[#191a1a] disabled:text-zinc-650 flex items-center justify-center transition-all disabled:opacity-40 active:scale-95 shrink-0"
@@ -279,7 +279,7 @@ export default function MainFeed({
             {/* SEARCH ACTIVE LOADER TIMELINE */}
             {loading && (
               <div className="py-20 space-y-8 max-w-xl mx-auto">
-                
+
                 {/* Pulsing Brain loader */}
                 <div className="flex items-center gap-4 border border-[#2a2c2c] bg-[#202222]/40 rounded-xl p-4">
                   <span className="h-8 w-8 rounded-full bg-[#10B981]/15 text-[#10B981] flex items-center justify-center animate-spin border-t-2 border-[#10B981] shrink-0" />
@@ -299,13 +299,12 @@ export default function MainFeed({
                     return (
                       <div key={index} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-3">
-                          <span className={`h-4.5 w-4.5 rounded-full flex items-center justify-center text-[9px] font-bold border ${
-                            isDone 
-                              ? "bg-[#10B981]/20 border-[#10B981] text-[#10B981]" 
-                              : isCurrent 
-                                ? "bg-zinc-800 border-[#10B981] text-[#10B981] animate-pulse" 
+                          <span className={`h-4.5 w-4.5 rounded-full flex items-center justify-center text-[9px] font-bold border ${isDone
+                              ? "bg-[#10B981]/20 border-[#10B981] text-[#10B981]"
+                              : isCurrent
+                                ? "bg-zinc-800 border-[#10B981] text-[#10B981] animate-pulse"
                                 : "bg-[#191a1a] border-zinc-800 text-zinc-650"
-                          }`}>
+                            }`}>
                             {isDone ? "✓" : index + 1}
                           </span>
                           <span className={isDone ? "text-zinc-500 line-through" : isCurrent ? "text-white font-medium" : "text-zinc-650"}>
@@ -338,7 +337,7 @@ export default function MainFeed({
             {/* COMPLETED RESEARCH THREAD RESULTS VIEW */}
             {current && !loading && (
               <div className="space-y-8 select-text">
-                
+
                 {/* Thread Question */}
                 <h2 className="text-2xl font-bold text-white tracking-tight leading-tight pt-2">
                   {current.question}
@@ -346,16 +345,15 @@ export default function MainFeed({
 
                 {/* MAIN SYNTHESIZED EXECUTIVE ANSWER */}
                 <div className="space-y-4">
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400">
                       <Sparkles className="h-4.5 w-4.5 text-[#10B981]" />
                       <span>CoPilot Synthesis Briefing</span>
                     </div>
 
-                    <span className={`text-[10px] font-mono-custom px-2 py-0.5 rounded border ${
-                      current.confidence * 100 >= 80 ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-amber-400 bg-amber-500/10 border-amber-500/20"
-                    }`}>
+                    <span className={`text-[10px] font-mono-custom px-2 py-0.5 rounded border ${current.confidence * 100 >= 80 ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-amber-400 bg-amber-500/10 border-amber-500/20"
+                      }`}>
                       Confidence {Math.round(current.confidence * 100)}%
                     </span>
                   </div>
@@ -394,7 +392,7 @@ export default function MainFeed({
                     <HelpCircle className="h-4 w-4 text-[#10B981]" />
                     <span>Related Questions</span>
                   </div>
-                  
+
                   <div className="space-y-2">
                     {getDynamicFollowUps(current).map((fq, index) => (
                       <button
@@ -437,7 +435,7 @@ export default function MainFeed({
                 </div>
               ) : (
                 sessions.map((s) => (
-                  <div 
+                  <div
                     key={s.id}
                     onClick={() => loadSession(s.id)}
                     className="p-4 bg-[#202222]/25 border border-[#2a2c2c] hover:border-zinc-700 rounded-xl cursor-pointer transition-all duration-200 group flex items-start justify-between gap-4"
@@ -454,9 +452,8 @@ export default function MainFeed({
                     </div>
 
                     <div className="text-right shrink-0">
-                      <span className={`text-[10px] font-mono-custom px-2 py-0.5 rounded border ${
-                        s.confidence * 100 >= 80 ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-amber-400 bg-amber-500/10 border-amber-500/20"
-                      }`}>
+                      <span className={`text-[10px] font-mono-custom px-2 py-0.5 rounded border ${s.confidence * 100 >= 80 ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-amber-400 bg-amber-500/10 border-amber-500/20"
+                        }`}>
                         {Math.round(s.confidence * 100)}% Conf.
                       </span>
                     </div>
@@ -470,7 +467,7 @@ export default function MainFeed({
         {/* VIEW C: DURABLE KNOWLEDGE BASE SEARCH */}
         {activeTab === "knowledge" && (
           <div className="space-y-6 pt-4">
-            
+
             <div className="space-y-1.5">
               <h3 className="text-2xl font-normal text-white">Durable Knowledge Base</h3>
               <p className="text-xs text-zinc-500">
@@ -504,7 +501,7 @@ export default function MainFeed({
                 </div>
               ) : (
                 kbResults.map((res) => (
-                  <div 
+                  <div
                     key={res.id}
                     onClick={() => loadSession(res.session_id)}
                     className="p-5 bg-[#202222]/30 border border-[#2a2c2c] hover:border-[#10B981]/40 rounded-xl cursor-pointer transition-all duration-150 group space-y-3"
@@ -534,7 +531,7 @@ export default function MainFeed({
         {/* VIEW D: METRICS TELEMETRY DASHBOARD */}
         {activeTab === "metrics" && (
           <div className="space-y-6 pt-4">
-            
+
             <div className="space-y-1.5">
               <h3 className="text-2xl font-normal text-white">Operations Dashboard</h3>
               <p className="text-xs text-zinc-500">
@@ -544,10 +541,10 @@ export default function MainFeed({
 
             {metrics ? (
               <div className="space-y-6">
-                
+
                 {/* Stat Cards Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 select-none">
-                  
+
                   <div className="p-4 bg-[#202222]/30 border border-[#2a2c2c] rounded-xl text-center space-y-1">
                     <div className="text-zinc-500 text-[10px] font-mono-custom uppercase tracking-wider">Sessions</div>
                     <div className="text-2xl font-bold text-white">{metrics.sessions}</div>
@@ -581,7 +578,7 @@ export default function MainFeed({
                       <span>Completed Sessions (Completed runs):</span>
                       <span className="text-white font-mono-custom">{metrics.completed_runs}</span>
                     </div>
-                    
+
                     <div className="flex justify-between">
                       <span>Total Pipeline Logged Events:</span>
                       <span className="text-white font-mono-custom">{metrics.events}</span>

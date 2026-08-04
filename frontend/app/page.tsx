@@ -233,90 +233,103 @@ export default function ResearchWorkspace() {
     }
   };
 
-  // Parse inline citations and render clickable tags
-  function parseCitations(conclusion: string | undefined, sources: Source[] | undefined) {
-    if (!conclusion) return <p className="text-zinc-550 italic">No summary generated.</p>;
-    if (!sources || sources.length === 0) return <p className="leading-relaxed text-zinc-200 text-[15px] whitespace-pre-wrap">{conclusion}</p>;
+  const [streamedConclusion, setStreamedConclusion] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
 
-    const sortedSources = [...sources]
-      .map((s, idx) => ({ ...s, originalIndex: idx + 1 }))
-      .filter((s) => s.title && s.title.length > 5)
-      .sort((a, b) => b.title.length - a.title.length);
+  useEffect(() => {
+    if (current?.conclusion) {
+      const fullText = current.conclusion;
+      setStreamedConclusion("");
+      setIsStreaming(true);
 
-    let parts: Array<{ type: "text" | "citation"; text: string; source?: Source; index?: number }> = [
-      { type: "text", text: conclusion },
-    ];
-
-    for (const src of sortedSources) {
-      const newParts: typeof parts = [];
-      for (const part of parts) {
-        if (part.type !== "text") {
-          newParts.push(part);
-          continue;
+      let currentIdx = 0;
+      const stepSize = Math.max(2, Math.floor(fullText.length / 40));
+      const interval = setInterval(() => {
+        currentIdx += stepSize;
+        if (currentIdx >= fullText.length) {
+          setStreamedConclusion(fullText);
+          setIsStreaming(false);
+          clearInterval(interval);
+        } else {
+          setStreamedConclusion(fullText.slice(0, currentIdx));
         }
+      }, 20);
 
-        const title = src.title;
-        let text = part.text;
-        let index = text.indexOf(title);
-
-        while (index !== -1) {
-          if (index > 0) {
-            newParts.push({ type: "text", text: text.substring(0, index) });
-          }
-          newParts.push({
-            type: "citation",
-            text: title,
-            source: src,
-            index: src.originalIndex,
-          });
-          text = text.substring(index + title.length);
-          index = text.indexOf(title);
-        }
-        if (text.length > 0) {
-          newParts.push({ type: "text", text });
-        }
-      }
-      parts = newParts;
+      return () => clearInterval(interval);
+    } else {
+      setStreamedConclusion("");
+      setIsStreaming(false);
     }
+  }, [current?.id, current?.conclusion]);
+
+  // Render clean structured explanation and key points with live streaming support
+  function parseCitations(conclusion: string | undefined, sources: Source[] | undefined) {
+    const textToRender = streamedConclusion || conclusion;
+    if (!textToRender) return <p className="text-zinc-550 italic">No summary generated.</p>;
+
+    const cleanedConclusion = textToRender
+      .replace(/\]\s*\(\s*https?:\/\/[^\)]+\)/g, "]")
+      .replace(/\(\s*https?:\/\/[^\)]+\)/g, "")
+      .replace(/https?:\/\/\S+/g, "")
+      .trim();
+
+    const lines = cleanedConclusion.split("\n");
 
     return (
-      <div className="leading-relaxed text-[#e3e3e2] text-sm md:text-[15px] space-y-4 whitespace-pre-line antialiased font-normal font-sans">
-        {parts.map((part, i) => {
-          if (part.type === "citation") {
-            const correspondingFindingIdx = current?.findings?.findIndex(f => f.source_id === part.source?.id) ?? -1;
-            
+      <div className="leading-relaxed text-[#e3e3e2] text-sm md:text-[15px] space-y-3 antialiased font-normal font-sans relative">
+        {lines.map((line, idx) => {
+          const trimmed = line.trim();
+          if (!trimmed) return <div key={idx} className="h-1" />;
+
+          // Render ### Heading
+          if (trimmed.startsWith("###") || trimmed.startsWith("##")) {
+            const headingText = trimmed.replace(/^#+\s*/, "");
             return (
-              <span key={i} className="inline group">
-                <span className="font-semibold text-white border-b border-dashed border-zinc-700 group-hover:border-[#10B981] group-hover:text-[#10B981] transition-colors duration-150">
-                  {part.text}
-                </span>
-                <button
-                  onClick={() => {
-                    if (correspondingFindingIdx !== -1) {
-                      setSelectedFindingIndex(correspondingFindingIdx);
-                      // Scroll visual cues to the selected finding on the right side
-                      const targetEl = document.getElementById(`evidence-card-${correspondingFindingIdx}`);
-                      if (targetEl) {
-                        targetEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                        targetEl.classList.add("ring-1", "ring-[#10B981]", "bg-zinc-800");
-                        setTimeout(() => {
-                          targetEl.classList.remove("ring-1", "ring-[#10B981]", "bg-zinc-800");
-                        }, 2000);
-                      }
-                    }
-                  }}
-                  className="mx-1 inline-flex items-center justify-center w-[15px] h-[15px] text-[10px] font-bold rounded-full bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 hover:bg-[#10B981] hover:text-white transition-all shadow-[0_0_8px_rgba(16,185,129,0.15)]"
-                  title={`Cit. ${part.index}: Click to inspect evidence details`}
-                >
-                  {part.index}
-                </button>
-              </span>
+              <h3 key={idx} className="text-base font-bold text-[#10B981] tracking-wide mt-4 mb-2 first:mt-0 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                {headingText}
+              </h3>
             );
           }
-          return <span key={i}>{part.text}</span>;
+
+          // Render Bullet points (• or - or *)
+          if (trimmed.startsWith("•") || trimmed.startsWith("-") || trimmed.startsWith("*")) {
+            const bulletText = trimmed.replace(/^[•\-\*]\s*/, "");
+            return (
+              <div key={idx} className="flex items-start gap-2.5 pl-1 my-1.5">
+                <span className="text-[#10B981] mt-1 text-xs">•</span>
+                <span className="flex-1 text-zinc-200">
+                  {renderFormattedText(bulletText)}
+                  {isStreaming && idx === lines.length - 1 && (
+                    <span className="inline-block w-2 h-4 bg-[#10B981] ml-1.5 align-middle animate-pulse" />
+                  )}
+                </span>
+              </div>
+            );
+          }
+
+          // Regular paragraph
+          return (
+            <p key={idx} className="text-zinc-200 leading-relaxed">
+              {renderFormattedText(trimmed)}
+              {isStreaming && idx === lines.length - 1 && (
+                <span className="inline-block w-2 h-4 bg-[#10B981] ml-1.5 align-middle animate-pulse" />
+              )}
+            </p>
+          );
         })}
       </div>
     );
+  }
+
+  function renderFormattedText(text: string) {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
   }
 
   // Dynamically assemble suggestions based on actual database session history (no hardcoding)
